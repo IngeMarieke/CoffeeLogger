@@ -515,6 +515,115 @@ input[type="date"]:invalid {
     background: #dc2626;
 }
 
+/* Sync status for household states */
+.sync-status.unknown {
+    background: #fff7ed;
+    color: #b45309;
+    border: 1.5px solid #fdba74;
+}
+.sync-status.known {
+    background: #f0fdf4;
+    color: #15803d;
+    border: 1.5px solid #6ee7b7;
+}
+
+/* Inline household controls */
+.household-inline-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 10px 0 0 0;
+    background: none;
+    box-shadow: none;
+    padding: 0;
+}
+.household-inline-row input[type="text"] {
+    flex: 1 1 120px;
+    padding: 8px 12px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 6px;
+    font-size: 0.97rem;
+    background: #f9fafb;
+    min-width: 120px;
+    max-width: 200px;
+    text-align: center;
+}
+.household-inline-row input[type="text"]:focus {
+    outline: none;
+    border-color: #667eea;
+    background: white;
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.08);
+}
+.household-inline-row .household-btn {
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s, box-shadow 0.2s;
+    min-width: 140px;
+    width: 140px;
+    text-align: center;
+    margin-left: 12px;
+}
+.household-inline-row .household-btn:disabled {
+    background: #cbd5e1;
+    color: #64748b;
+    cursor: not-allowed;
+}
+.household-inline-row .household-btn:hover:not(:disabled) {
+    background: #4f46e5;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.08);
+}
+
+/* Toggled household info (leave/code) */
+.household-info-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 8px;
+    background: none;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    text-align: center;
+}
+.household-info-toggle .leave-btn {
+    background: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 7px 14px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    margin-bottom: 0;
+    transition: background 0.2s;
+    display: inline-block;
+}
+.household-info-toggle .leave-btn:hover {
+    background: #dc2626;
+}
+.household-info-toggle .code-info {
+    font-size: 0.98rem;
+    color: #1e293b;
+    background: #e0e7ff;
+    padding: 0 10px;
+    border-radius: 5px;
+    margin-top: 0;
+    word-break: break-all;
+    display: inline-block;
+    border: 1.5px solid #a5b4fc;
+    font-family: 'Fira Mono', 'Consolas', 'Menlo', monospace;
+    letter-spacing: 1px;
+    font-weight: 600;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .container {
@@ -601,4 +710,47 @@ input[type="date"]:invalid {
 
 .log-entry {
     animation: slideIn 0.3s ease-out;
+} 
+
+.household-box {
+    background: rgba(255,255,255,0.85);
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(30,41,59,0.06);
+    margin: 18px auto 0 auto;
+    padding: 18px 22px 14px 22px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: fit-content;
+    min-width: 260px;
+    max-width: 98vw;
+}
+.household-box .household-inline-row {
+    width: 100%;
+    justify-content: space-between;
+    margin: 10px 0 0 0;
+    align-items: center;
+}
+.household-box .household-inline-row input[type="text"],
+.household-box .household-inline-row .household-btn {
+    height: 40px;
+    line-height: 40px;
+    box-sizing: border-box;
+}
+.household-box .household-inline-row input[type="text"] {
+    width: auto;
+    min-width: 90px;
+    max-width: 180px;
+    text-align: left;
+    margin-right: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+.household-box .household-inline-row .household-btn {
+    min-width: 140px;
+    width: 140px;
+    text-align: center;
+    margin-left: 12px;
+    padding-top: 0;
+    padding-bottom: 0;
 } 

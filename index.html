@@ -23,10 +23,14 @@
                 <div id="userInfo" class="user-info" style="display: none;"></div>
                 <button id="loginBtn" class="auth-btn login-btn" onclick="login()">Login with Google</button>
                 <button id="logoutBtn" class="auth-btn logout-btn" onclick="logout()" style="display: none;">Logout</button>
+                <!-- Household UI will be rendered here by JS -->
             </div>
         </header>
 
         <main>
+            <!-- Modal for household popups -->
+            <div id="householdModal" class="household-modal" style="display:none;"></div>
+
             <form id="coffeeForm" class="coffee-form">
                 <div class="form-group">
                     <label for="groundsIn">Grounds In (grams)</label>

@@ -474,9 +474,154 @@ class CoffeeLogger {
     }
 }
 
-// Initialize the app when DOM is loaded
+// --- Household Management UI Logic (INLINE version) ---
+function renderHouseholdUI(user) {
+    const syncStatus = document.getElementById('syncStatus');
+    const authSection = document.getElementById('authSection');
+    // Remove any previous household UI
+    let prev = document.getElementById('householdInlineUI');
+    if (prev) prev.remove();
+    if (!user) {
+        syncStatus.classList.remove('unknown', 'known');
+        syncStatus.textContent = '🔴 Local only';
+        return;
+    }
+    window.getUserHouseholdId(user).then(async (householdId) => {
+        let householdDiv = document.createElement('div');
+        householdDiv.id = 'householdInlineUI';
+        householdDiv.style.width = '100%';
+        if (householdId) {
+            // In a household
+            const info = await window.getHouseholdInfo(householdId);
+            syncStatus.classList.remove('unknown');
+            syncStatus.classList.add('known');
+            syncStatus.textContent = `🟢 Household: ${info.name}`;
+            syncStatus.style.cursor = 'pointer';
+            // Toggle details
+            let detailsVisible = false;
+            let detailsDiv = document.createElement('div');
+            detailsDiv.className = 'household-info-toggle';
+            detailsDiv.style.display = 'none';
+            detailsDiv.innerHTML = `
+                <button class="leave-btn" id="leaveHouseholdBtn">Leave household</button>
+                <span class="code-info">Household code: ${info.inviteCode}</span>
+            `;
+            syncStatus.onclick = () => {
+                detailsVisible = !detailsVisible;
+                detailsDiv.style.display = detailsVisible ? 'block' : 'none';
+            };
+            householdDiv.appendChild(detailsDiv);
+            setTimeout(() => {
+                // Attach leave handler after DOM insert
+                const btn = document.getElementById('leaveHouseholdBtn');
+                if (btn) {
+                    btn.onclick = async () => {
+                        if (confirm('Are you sure you want to leave this household?')) {
+                            await window.leaveHousehold(user);
+                            window.showNotification('Left household', 'success');
+                            renderHouseholdUI(user);
+                            if (window.coffeeLogger) window.coffeeLogger.loadFromCloud();
+                        }
+                    };
+                }
+            }, 0);
+        } else {
+            // Not in a household
+            syncStatus.classList.remove('known');
+            syncStatus.classList.add('unknown');
+            syncStatus.textContent = '🟠 Household: Unknown';
+            syncStatus.style.cursor = 'default';
+            syncStatus.onclick = null;
+            // Create new household row
+            const createRow = document.createElement('div');
+            createRow.className = 'household-inline-row';
+            createRow.innerHTML = `
+                <input type="text" id="newHouseholdName" placeholder="Household name" autocomplete="off" />
+                <button class="household-btn" id="createHouseholdBtn" disabled>Create new household</button>
+            `;
+            // Join household row
+            const joinRow = document.createElement('div');
+            joinRow.className = 'household-inline-row';
+            joinRow.innerHTML = `
+                <input type="text" id="joinHouseholdCode" placeholder="Invite code" autocomplete="off" />
+                <button class="household-btn" id="joinHouseholdBtn" disabled>Join household</button>
+            `;
+            // Wrap both rows in a box
+            const box = document.createElement('div');
+            box.className = 'household-box';
+            box.appendChild(createRow);
+            box.appendChild(joinRow);
+            householdDiv.appendChild(box);
+            // Enable/disable buttons based on input
+            const nameInput = createRow.querySelector('#newHouseholdName');
+            const createBtn = createRow.querySelector('#createHouseholdBtn');
+            nameInput.addEventListener('input', () => {
+                createBtn.disabled = !nameInput.value.trim();
+            });
+            createBtn.onclick = async () => {
+                const name = nameInput.value.trim();
+                if (!name) return;
+                try {
+                    await window.createHousehold(user, name);
+                    window.showNotification('Household created!', 'success');
+                    renderHouseholdUI(user);
+                    if (window.coffeeLogger) window.coffeeLogger.loadFromCloud();
+                } catch (err) {
+                    window.showNotification(err.message, 'error');
+                }
+            };
+            const codeInput = joinRow.querySelector('#joinHouseholdCode');
+            const joinBtn = joinRow.querySelector('#joinHouseholdBtn');
+            codeInput.addEventListener('input', () => {
+                joinBtn.disabled = !codeInput.value.trim();
+            });
+            joinBtn.onclick = async () => {
+                const code = codeInput.value.trim().toUpperCase();
+                if (!code) return;
+                try {
+                    await window.joinHouseholdByInvite(user, code);
+                    window.showNotification('Joined household!', 'success');
+                    renderHouseholdUI(user);
+                    if (window.coffeeLogger) window.coffeeLogger.loadFromCloud();
+                } catch (err) {
+                    if (err && (err.message === 'Invalid invite code' || err.message.includes('Missing or insufficient permissions'))) {
+                        window.showNotification('Invalid invite code', 'error');
+                    } else {
+                        window.showNotification(err.message, 'error');
+                    }
+                }
+            };
+        }
+        // Insert after syncStatus
+        authSection.insertBefore(householdDiv, document.getElementById('userInfo'));
+    });
+}
+
+// Patch CoffeeLogger to re-render household UI on login/logout
+const origSetUser = CoffeeLogger.prototype.setUser;
+CoffeeLogger.prototype.setUser = function(user) {
+    origSetUser.call(this, user);
+    renderHouseholdUI(user);
+};
+
+// On page load, always initialize household UI
 document.addEventListener('DOMContentLoaded', () => {
     new CoffeeLogger();
+    renderHouseholdUI(null);
+    const params = new URLSearchParams(window.location.search);
+    const invite = params.get('invite');
+    if (invite) {
+        // Wait for login, then prefill join form
+        const tryPrefill = () => {
+            const joinInput = document.getElementById('inviteCodeInput');
+            if (joinInput) {
+                joinInput.value = `${window.location.origin}?invite=${invite}`;
+            } else {
+                setTimeout(tryPrefill, 200);
+            }
+        };
+        tryPrefill();
+    }
 });
 
  
